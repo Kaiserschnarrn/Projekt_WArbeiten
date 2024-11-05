@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 @st.cache_data
 def load_data():
     # Absoluter Pfad zur Datei
-    df = pd.read_csv('C:/Users/fatih/Projekt/ProjektWA/NASA.csv', skiprows=15)
+    df = pd.read_csv('./NASA.csv', skiprows=15)
     # Spaltennamen anpassen
     df.columns = [
         'Parameter', 'Year', 'Jan', 'Feb', 'Mar', 'Apr', 'May',
