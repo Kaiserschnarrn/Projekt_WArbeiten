@@ -1,31 +1,6 @@
-#import streamlit as st
-#import pandas as pd
-#import plotly.express as px
-
-#def load_data(file_path):
-  #  try:
-        # Laden der CSV-Datei ohne Header und mit festgelegten Spaltennamen
-       #data = pd.read_csv(file_path, header=None, names=["timestamp", "power_output"], on_bad_lines='skip')
-        # Umwandeln der 'timestamp'-Spalte in Datetime-Format
-       # data['timestamp'] = pd.to_datetime(data['timestamp'], format='%Y-%m-%d %H:%M:%S', errors='coerce')
-       # return data
-    #except Exception as e:
-        #st.error(f"Fehler beim Laden der Daten: {e}")
-       # return pd.DataFrame()  # Gibt ein leeres DataFrame zurück im Fehlerfall
-
-# Pfad zur CSV-Datei anpassen
-#data_path = r"C:\Users\kingj\AppData\Roaming\JetBrains\PyCharmCE2024.1\scratches\solar_daten.csv"
-
-# Daten laden
-#data = load_data
-
-# Versuch am 03.11 Modelle zu erstellen; hat nicht geklappt
-# Versuch 3 am 05.11 Modelle zu erstellen
-# am 20.11 weiterprogrammiert (Tutorial und Verbesserungen am Code)
 import streamlit as st
 import os
 import time
-import pandas as pd
 
 # Statische Pfade und Konstanten
 DATA_DIRECTORY = "./data"
@@ -56,15 +31,7 @@ def add_file_to_last_used(file_path):
 
 # Funktion: Datei validieren (Dummy-Funktion für Beispielzwecke)
 def validate_file(file_path):
-    try:
-        # Datei als CSV laden und prüfen (z. B. auf spezifische Spalten)
-        df = pd.read_csv(file_path)
-        # Beispielprüfung: Mindestens 2 Spalten erforderlich
-        if df.shape[1] < 2:
-            return False, "Die Datei enthält nicht genügend Spalten."
-        return True, None
-    except Exception as e:
-        return False, f"Fehler beim Lesen der Datei: {e}"
+    return True
 
 # Funktion: Startseite
 def start_page():
@@ -140,11 +107,39 @@ def file_upload_page():
         if st.button("Zurück zur Startseite"):
             st.session_state.page = "Start"
     with col2:
-        if st.button("Weiter zur Verarbeitung"):
-            if uploaded_file or selected_file:
-                st.session_state.page = "Verarbeitung"
-            else:
-                st.warning("Bitte wählen Sie zuerst eine Datei aus!")
+        if st.button("Weiter zur Parameterauswahl"):
+            st.session_state.page = "Parameterauswahl"
+
+def parameter_selection_page():
+    st.markdown("<h1 style='text-align: center;'>Parameter Auswahl</h1>", unsafe_allow_html=True)
+
+    # Add parameter selection controls here
+    parameter1 = st.slider("Parameter 1", 0, 100, 50)
+    parameter2 = st.selectbox("Parameter 2", ["Option 1", "Option 2", "Option 3"])
+
+    # Navigation buttons
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("Zurück zur Dateiauswahl"):
+            st.session_state.page = "Dateiauswahl"
+    with col2:
+        if st.button("Weiter zu den Ergebnissen"):
+            st.session_state.page = "Ergebnisse"
+
+def results_page():
+    st.markdown("<h1 style='text-align: center;'>Ergebnisse</h1>", unsafe_allow_html=True)
+
+    # Display the results here
+    st.write("This is where the results will be displayed.")
+
+    # Navigation buttons
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("Zurück zur Parameterauswahl"):
+            st.session_state.page = "Parameterauswahl"
+    with col2:
+        if st.button("Zurück zur Startseite"):
+            st.session_state.page = "Start"
 
 # Funktion: Hauptlogik
 def main():
@@ -155,6 +150,10 @@ def main():
         start_page()
     elif st.session_state.page == "Dateiauswahl":
         file_upload_page()
+    elif st.session_state.page == "Parameterauswahl":
+        parameter_selection_page()
+    elif st.session_state.page == "Ergebnisse":
+        results_page()
 
 if __name__ == "__main__":
     main()
