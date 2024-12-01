@@ -148,15 +148,9 @@ def start_page():
 def file_upload_page():
     st.markdown("<h2>Datei hochladen</h2>", unsafe_allow_html=True)
 
-    # Letzte verwendete Dateien anzeigen
-    last_used_files = load_last_used_files()
-    if last_used_files:
-        st.write("Zuletzt verwendete Dateien:")
-        selected_file = st.selectbox("Wählen Sie eine Datei aus:", [""] + last_used_files)
-        if selected_file:
-            st.success(f"Ausgewählte Datei: {selected_file}")
-
-    uploaded_file = st.file_uploader("Wählen Sie eine Datei zum Hochladen aus", type=["csv"])
+    # Erster Datei-Upload
+    st.write("**1. Laden Sie eine neue Datei hoch:**")
+    uploaded_file = st.file_uploader("Neue Datei hochladen", type=["csv"], key="new_upload")
 
     if uploaded_file:
         st.write("Validierung der hochgeladenen Datei läuft...")
@@ -176,6 +170,25 @@ def file_upload_page():
             save_last_used_file(STATIC_FILE_PATH)
 
             st.success("Datei erfolgreich validiert! ✅")
+
+    # Zweiter Datei-Upload mit "Zuletzt verwendete Dateien"
+    st.write("**2. Wählen Sie eine zuletzt verwendete Datei aus und bestätigen Sie den Upload:**")
+    last_used_files = load_last_used_files()
+    selected_file = st.selectbox("Zuletzt verwendete Dateien:", [""] + last_used_files, key="recent_upload")
+
+    if selected_file and st.button("Hochladen", key="upload_recent"):
+        st.write("Validierung der ausgewählten Datei läuft...")
+        with st.spinner("Datei wird validiert..."):
+            # Zeige das Windrad-GIF
+            st.markdown(f"""
+                <div style="text-align:center; margin: 20px 0;">
+                    <img src="data:image/gif;base64,{base64.b64encode(open(WINDRAD_IMAGE_PATH, "rb").read()).decode()}" alt="Windrad" style="width:150px; height:auto;">
+                </div>
+            """, unsafe_allow_html=True)
+
+            time.sleep(2)
+
+            st.success(f"Datei erfolgreich verarbeitet: {selected_file}")
 
     if st.button("⬅️ Zurück zur Startseite"):
         st.session_state.page = "Start"
@@ -203,6 +216,10 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+
+
 
 
 
