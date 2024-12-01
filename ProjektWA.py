@@ -1,15 +1,31 @@
 import streamlit as st
 import os
 import time
+import shutil
 
 # Statische Pfade und Konstanten
 DATA_DIRECTORY = "./data"
-LAST_USED_FILE = os.path.join(DATA_DIRECTORY, "last_used.txt")
-STATIC_FILE_PATH = os.path.join(DATA_DIRECTORY, "NASA_Data.csv")
-
-# Initialisierung: Verzeichnisse erstellen
 if not os.path.exists(DATA_DIRECTORY):
     os.makedirs(DATA_DIRECTORY)
+STATIC_FILE_PATH = os.path.join(DATA_DIRECTORY, "NASA_Data.csv")
+LAST_USED_DIRECTORY = os.path.join(DATA_DIRECTORY, "last_used")
+if not os.path.exists(LAST_USED_DIRECTORY):
+    os.makedirs(LAST_USED_DIRECTORY)
+
+
+def limit_last_used_files():
+    # Get a list of files in the last_used directory
+    files = os.listdir(LAST_USED_DIRECTORY)
+    files_with_paths = [os.path.join(LAST_USED_DIRECTORY, f) for f in files]
+
+    # Sort files by modification time (oldest first)
+    files_with_paths.sort(key=os.path.getmtime)
+
+    # If there are more than 5 files, delete the oldest ones
+    while len(files_with_paths) > 5:
+        os.remove(files_with_paths[0])  # Remove the oldest file
+        files_with_paths.pop(0)  # Remove it from the list
+
 
 # Funktion: Letzte verwendete Dateien laden
 def load_last_used_files():
@@ -18,20 +34,23 @@ def load_last_used_files():
             return [line.strip() for line in file.readlines()]
     return []
 
-# Funktion: Neue Datei zur Liste der letzten Dateien hinzufügen
+
 def add_file_to_last_used(file_path):
-    last_used = load_last_used_files()
-    if file_path in last_used:
-        last_used.remove(file_path)
-    last_used.insert(0, file_path)  # Neuste Datei zuerst
-    if len(last_used) > 5:
-        last_used = last_used[:5]  # Nur die letzten 5 Einträge behalten
-    with open(LAST_USED_FILE, "w") as file:
-        file.writelines([f"{path}\n" for path in last_used])
+    with open(LAST_USED_FILE, "a") as file:
+        file.write(file_path + "\n")
+
 
 # Funktion: Datei validieren (Dummy-Funktion für Beispielzwecke)
 def validate_file(file_path):
-    return True
+    is_valid = True
+    error = None
+    # Needs to be adjusted to validate the content of the csv
+    if not file_path.endswith('.csv'):
+        is_valid = False
+        error = "Die Datei muss im CSV-Format sein."
+
+    return is_valid, error
+
 
 # Funktion: Startseite
 def start_page():
@@ -60,43 +79,39 @@ def start_page():
     if st.button("Wetterapp starten"):
         st.session_state.page = "Dateiauswahl"
 
+
 # Funktion: Dateiauswahl-Seite
 def file_upload_page():
     st.markdown("<h1 style='text-align: center;'>Dateiauswahl</h1>", unsafe_allow_html=True)
-
-    # Datei-Upload und Dropdown-Optionen
-    uploaded_file = st.file_uploader("Wählen Sie eine Datei zum Hochladen aus", type=["csv"])
-    last_used_files = load_last_used_files()
+    selected_file = ''
+    uploaded_file = st.file_uploader("Wählen Sie eine Datei zum Hochladen aus", type=["csv"],
+                                     disabled=bool(selected_file))
+    last_used_files = os.listdir(LAST_USED_DIRECTORY)
     selected_file = st.selectbox("Oder wählen Sie eine der zuletzt verwendeten Dateien aus:", [""] + last_used_files)
 
     if uploaded_file and selected_file:
         st.error("Bitte wählen Sie entweder eine hochgeladene Datei oder eine zuvor verwendete Datei.")
         return
 
-    # Ladeanimation und Validierung
     if uploaded_file:
         st.write("Validierung der hochgeladenen Datei läuft...")
         with st.spinner("Datei wird validiert..."):
             time.sleep(2)  # Simulierte Ladezeit
-            with open(STATIC_FILE_PATH, "wb") as f:
+            # Copy the uploaded file to the last_used directory with its original name
+            original_file_path = os.path.join(LAST_USED_DIRECTORY, uploaded_file.name)
+            with open(original_file_path, "wb") as f:
                 f.write(uploaded_file.getbuffer())
-            add_file_to_last_used(STATIC_FILE_PATH)
-            is_valid, error = validate_file(STATIC_FILE_PATH)
-        if is_valid:
-            st.success("Datei erfolgreich validiert!")
-        else:
-            st.error(f"Validierung fehlgeschlagen: {error}")
-            st.info("Bitte prüfen Sie das Tutorial auf der Startseite.")
+            limit_last_used_files()  # Ensure we have at most 5 files
+            st.success("Datei erfolgreich hochgeladen!")
 
     elif selected_file:
         st.write(f"Validierung der Datei: {selected_file} läuft...")
         with st.spinner("Datei wird validiert..."):
             time.sleep(2)  # Simulierte Ladezeit
-            is_valid, error = validate_file(selected_file)
+            selected_file_path = os.path.join(LAST_USED_DIRECTORY, selected_file)
+            is_valid, error = validate_file(selected_file_path)  # Validate the selected file
         if is_valid:
             st.success("Datei erfolgreich validiert!")
-            with open(STATIC_FILE_PATH, "wb") as f:
-                f.write(open(selected_file, "rb").read())
         else:
             st.error(f"Validierung fehlgeschlagen: {error}")
             st.info("Bitte prüfen Sie das Tutorial auf der Startseite.")
@@ -107,8 +122,14 @@ def file_upload_page():
         if st.button("Zurück zur Startseite"):
             st.session_state.page = "Start"
     with col2:
-        if st.button("Weiter zur Parameterauswahl"):
-            st.session_state.page = "Parameterauswahl"
+        if uploaded_file or selected_file:
+            if st.button("Weiter zur Parameterauswahl"):
+                if selected_file:
+                    shutil.copy(selected_file_path, STATIC_FILE_PATH)
+                st.session_state.page = "Parameterauswahl"
+        else:
+            st.button("Weiter zur Parameterauswahl", disabled=True)
+
 
 def parameter_selection_page():
     st.markdown("<h1 style='text-align: center;'>Parameter Auswahl</h1>", unsafe_allow_html=True)
@@ -126,6 +147,7 @@ def parameter_selection_page():
         if st.button("Weiter zu den Ergebnissen"):
             st.session_state.page = "Ergebnisse"
 
+
 def results_page():
     st.markdown("<h1 style='text-align: center;'>Ergebnisse</h1>", unsafe_allow_html=True)
 
@@ -141,6 +163,7 @@ def results_page():
         if st.button("Zurück zur Startseite"):
             st.session_state.page = "Start"
 
+
 # Funktion: Hauptlogik
 def main():
     if "page" not in st.session_state:
@@ -154,6 +177,7 @@ def main():
         parameter_selection_page()
     elif st.session_state.page == "Ergebnisse":
         results_page()
+
 
 if __name__ == "__main__":
     main()
