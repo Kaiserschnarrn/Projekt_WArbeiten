@@ -1,61 +1,37 @@
+# Bibliotheken importieren
 import streamlit as st
 import os
-import time
-import shutil
 import pandas as pd
-import matplotlib.pyplot as plt
-import numpy as np
+import base64
+import time
+from datetime import datetime
 
 # Statische Pfade und Konstanten
 DATA_DIRECTORY = "./data"
+LAST_USED_FILE = os.path.join(DATA_DIRECTORY, "last_used.txt")
+WINDRAD_IMAGE_PATH = os.path.abspath("windrad.gif")  # Absoluter Pfad zum Windrad-GIF
+
+# Initialisierung: Verzeichnisse erstellen
 if not os.path.exists(DATA_DIRECTORY):
     os.makedirs(DATA_DIRECTORY)
-STATIC_FILE_PATH = os.path.join(DATA_DIRECTORY, "NASA_Data.csv")
-LAST_USED_DIRECTORY = os.path.join(DATA_DIRECTORY, "last_used")
-if not os.path.exists(LAST_USED_DIRECTORY):
-    os.makedirs(LAST_USED_DIRECTORY)
-WINDRAD_IMAGE_PATH = os.path.abspath("windrad.gif")
 
-
-def limit_last_used_files():
-    # Get a list of files in the last_used directory
-    files = os.listdir(LAST_USED_DIRECTORY)
-    files_with_paths = [os.path.join(LAST_USED_DIRECTORY, f) for f in files]
-
-    # Sort files by modification time (oldest first)
-    files_with_paths.sort(key=os.path.getmtime)
-
-    # If there are more than 5 files, delete the oldest ones
-    while len(files_with_paths) > 5:
-        os.remove(files_with_paths[0])  # Remove the oldest file
-        files_with_paths.pop(0)  # Remove it from the list
-
-
-# Funktion: Letzte verwendete Dateien laden
+# Funktion: Zuletzt verwendete Dateien speichern und laden
 def load_last_used_files():
     if os.path.exists(LAST_USED_FILE):
         with open(LAST_USED_FILE, "r") as file:
             return [line.strip() for line in file.readlines()]
     return []
 
+def save_last_used_file(file_path):
+    last_used_files = load_last_used_files()
+    if file_path not in last_used_files:
+        last_used_files.insert(0, file_path)  # Neueste Datei an den Anfang setzen
+        if len(last_used_files) > 5:
+            last_used_files = last_used_files[:5]  # Nur die letzten 5 behalten
+        with open(LAST_USED_FILE, "w") as file:
+            file.writelines(f"{path}\n" for path in last_used_files)
 
-def add_file_to_last_used(file_path):
-    with open(LAST_USED_FILE, "a") as file:
-        file.write(file_path + "\n")
-
-
-# Funktion: Datei validieren (Dummy-Funktion für Beispielzwecke)
-def validate_file(file_path):
-    is_valid = True
-    error = None
-    # Needs to be adjusted to validate the content of the csv
-    if not file_path.endswith('.csv'):
-        is_valid = False
-        error = "Die Datei muss im CSV-Format sein."
-
-    return is_valid, error
-
-
+# CSS für Styling
 def add_custom_css():
     st.markdown("""
         <style>
@@ -64,64 +40,31 @@ def add_custom_css():
                 font-family: 'Arial', sans-serif;
                 color: #333;
             }
-            .main {
-                padding: 2rem;
-            }
             .header {
                 background-color: #004d99;
                 padding: 20px;
                 border-radius: 10px;
                 text-align: center;
                 color: white;
-                font-family: 'Arial', sans-serif;
                 margin-bottom: 30px;
-                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             }
-            .header h1 {
-                margin: 0;
-                font-size: 2.5rem;
-                letter-spacing: 1px;
-            }
-            .header p {
-                font-size: 1rem;
-                margin: 5px 0 0;
-                color: #cce6ff;
-            }
-            .footer {
-                margin-top: 3rem;
-                background-color: #e6f2ff;
-                padding: 1rem;
-                text-align: center;
-                border-radius: 8px;
-                color: #004d99;
-                font-size: 0.9rem;
-            }
-            .stButton>button {
-                background-color: #0066cc;
-                color: white;
-                border-radius: 8px;
-                padding: 0.5rem 1rem;
-                font-size: 1rem;
-                border: none;
-                cursor: pointer;
-            }
-            .stButton>button:hover {
-                background-color: #004d99;
-            }
-            .stExpander {
-                background-color: #f7fbff;
-                border-left: 4px solid #004d99;
-                padding: 1rem;
-                margin-top: 1rem;
-                border-radius: 8px;
+            .section {
+                margin-top: 20px;
+                padding: 15px;
+                background-color: #eef6ff;
+                border-radius: 10px;
+                border: 1px solid #004d99;
             }
         </style>
     """, unsafe_allow_html=True)
 
-
 # Funktion: Beispielgrafik erstellen
-@st.cache_data  # Caching der Grafik für Konsistenz
+@st.cache_data
 def plot_example_graph():
+    import matplotlib.pyplot as plt
+    import numpy as np
+    import pandas as pd
+
     dates = pd.date_range(start="2024-01-01", periods=30)
     temperatures = np.random.uniform(low=-5, high=25, size=30)
 
@@ -133,7 +76,6 @@ def plot_example_graph():
     ax.grid(visible=True, linestyle='--', alpha=0.7)
     fig.autofmt_xdate(rotation=45)  # Datum leserlich formatieren
     return fig
-
 
 # Funktion: Startseite
 def start_page():
@@ -149,154 +91,114 @@ def start_page():
     Nutzen Sie diese Plattform, um Wetterdaten zu analysieren, Szenarien zu erstellen und Ergebnisse zu visualisieren.
     """)
 
-    with st.expander("📖 Tutorial anzeigen"):
-        st.write("""
-        **Anleitung:**  
-        1️⃣ Laden Sie eine CSV-Datei mit Wetterdaten hoch.  
-        2️⃣ Prüfen Sie die Datei und wählen Sie Parameter aus.  
-        3️⃣ Analysieren und visualisieren Sie Ihre Daten.  
-        """)
-
-    st.markdown(
-        "<a href='https://power.larc.nasa.gov/data-access-viewer/' style='color: #004d99; text-decoration: none;'>🌐 Besuchen Sie die NASA POWER-Seite</a>",
-        unsafe_allow_html=True,
-    )
-
-    # Statische Grafik anzeigen
-    st.pyplot(plot_example_graph())
+    st.pyplot(plot_example_graph())  # Beispielgrafik anzeigen
 
     if st.button("🚀 Wetterapp starten"):
         st.session_state.page = "Dateiauswahl"
 
-
-# Funktion: Dateiauswahl-Seite
+# Funktion: Datei-Upload-Seite
 def file_upload_page():
-    st.markdown("<h1 style='text-align: center;'>Dateiauswahl</h1>", unsafe_allow_html=True)
-    selected_file = ''
-    uploaded_file = st.file_uploader("Wählen Sie eine Datei zum Hochladen aus", type=["csv"],
-                                     disabled=bool(selected_file))
-    last_used_files = os.listdir(LAST_USED_DIRECTORY)
-    selected_file = st.selectbox("Oder wählen Sie eine der zuletzt verwendeten Dateien aus:", [""] + last_used_files)
+    st.markdown("<h2>Datei hochladen</h2>", unsafe_allow_html=True)
 
-    if uploaded_file and selected_file:
-        st.error("Bitte wählen Sie entweder eine hochgeladene Datei oder eine zuvor verwendete Datei.")
-        return
-
+    # Datei hochladen
+    uploaded_file = st.file_uploader("Neue Datei hochladen", type=["xlsx"])
     if uploaded_file:
-        st.write("Validierung der hochgeladenen Datei läuft...")
-        with st.spinner("Datei wird validiert..."):
-            col1, col2, col3 = st.columns([1, 2, 1])
-            with col2:  # Use the middle column for centering
-                st.image(WINDRAD_IMAGE_PATH, use_column_width=True)
-            time.sleep(2)  # Simulated loading time
-            # Copy the uploaded file to the last_used directory with its original name
-            original_file_path = os.path.join(LAST_USED_DIRECTORY, uploaded_file.name)
-            with open(original_file_path, "wb") as f:
+        with st.spinner("Datei wird hochgeladen und validiert..."):
+            # Temporären Pfad verwenden, um die hochgeladene Datei zu speichern
+            uploaded_file_path = os.path.join(DATA_DIRECTORY, uploaded_file.name)
+            with open(uploaded_file_path, "wb") as f:
                 f.write(uploaded_file.getbuffer())
 
-            # Validate the uploaded file
-            is_valid, error = validate_file(original_file_path)
+            # Speicher den Dateipfad in st.session_state
+            st.session_state.uploaded_file_path = uploaded_file_path
+            st.success(f"Datei erfolgreich hochgeladen: {uploaded_file.name}")
 
-            if is_valid:
-                limit_last_used_files()  # Ensure we have at most 5 files
-                st.success("Datei erfolgreich hochgeladen!")
-            else:
-                st.error(f"Validierung fehlgeschlagen: {error}")
-                st.info("Bitte prüfen Sie das Tutorial auf der Startseite.")
+    # Dropdown für zuletzt verwendete Dateien
+    last_used_files = load_last_used_files()
+    if last_used_files:
+        selected_file = st.selectbox("Zuletzt verwendete Dateien:", [""] + last_used_files, key="recent_upload")
+        if st.button("Hochladen", key="upload_recent"):
+            with st.spinner("Datei wird hochgeladen und validiert..."):
+                st.session_state.uploaded_file_path = selected_file
+                st.success(f"Datei {selected_file} erfolgreich verarbeitet!")
 
-    elif selected_file:
-        st.write(f"Validierung der Datei: {selected_file} läuft...")
-        with st.spinner("Datei wird validiert..."):
-            col1, col2, col3 = st.columns([1, 2, 1])
-            with col2:  # Use the middle column for centering
-                st.image(WINDRAD_IMAGE_PATH, use_column_width=True)
-            time.sleep(2)  # Simulated loading time
-            selected_file_path = os.path.join(LAST_USED_DIRECTORY, selected_file)
+    # Weiterleitung zur Parameterauswahl
+    if st.button("Weiter zur Parameterauswahl"):
+        st.session_state.page = "Parameter"
 
-            # Validate the selected file
-            is_valid, error = validate_file(selected_file_path)
+    if st.button("⬅️ Zurück zur Startseite"):
+        st.session_state.page = "Start"
 
-            if is_valid:
-                st.success("Datei erfolgreich validiert!")
-            else:
-                st.error(f"Validierung fehlgeschlagen: {error}")
-                st.info("Bitte prüfen Sie das Tutorial auf der Startseite.")
-
-    # Navigation
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button("Zurück zur Startseite"):
-            st.session_state.page = "Start"
-    with col2:
-        if uploaded_file or selected_file:
-            if st.button("Weiter zur Parameterauswahl"):
-                if selected_file:
-                    shutil.copy(selected_file_path, STATIC_FILE_PATH)
-                st.session_state.page = "Parameterauswahl"
-        else:
-            st.button("Weiter zur Parameterauswahl", disabled=True)
-
-
+# Funktion: Parameterauswahl-Seite
 def parameter_selection_page():
-    st.markdown("<h1 style='text-align: center;'>Parameter Auswahl</h1>", unsafe_allow_html=True)
+    st.markdown("<h2>Parameterauswahl</h2>", unsafe_allow_html=True)
 
-    # Add parameter selection controls here
-    parameter1 = st.slider("Parameter 1", 0, 100, 50)
-    parameter2 = st.selectbox("Parameter 2", ["Option 1", "Option 2", "Option 3"])
-
-    # Navigation buttons
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button("Zurück zur Dateiauswahl"):
-            st.session_state.page = "Dateiauswahl"
-    with col2:
-        if st.button("Weiter zu den Ergebnissen"):
-            st.session_state.page = "Ergebnisse"
-
-
-def results_page():
-    st.markdown("<h1 style='text-align: center;'>Ergebnisse</h1>", unsafe_allow_html=True)
-
-    # Display the results here
-    st.write("This is where the results will be displayed.")
-
-    # Navigation buttons
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button("Zurück zur Parameterauswahl"):
-            st.session_state.page = "Parameterauswahl"
-    with col2:
-        if st.button("Zurück zur Startseite"):
-            st.session_state.page = "Start"
-
-
-def footer():
+    # CSS für größere Buttons nur auf dieser Seite
     st.markdown("""
-        <div class="footer">
-            Entwickelt von Gruppe A. © 2024.  
-        </div>
+        <style>
+            .stButton button {
+                width: 220px; /* Breite der Buttons */
+                height: 90px; /* Höhe der Buttons */
+                font-size: 16px; /* Größere Schrift */
+                text-align: center; /* Text zentrieren */
+                white-space: pre-wrap; /* Text auf mehrere Zeilen erlauben */
+            }
+        </style>
     """, unsafe_allow_html=True)
 
+    # Überprüfen, ob eine Datei hochgeladen wurde
+    if "uploaded_file_path" not in st.session_state or not os.path.exists(st.session_state.uploaded_file_path):
+        st.error("Es wurde keine gültige Datei hochgeladen. Bitte laden Sie eine Datei auf der vorherigen Seite hoch.")
+        return
 
-# Funktion: Hauptlogik
+    # Excel-Vorschau
+    try:
+        df = pd.read_excel(st.session_state.uploaded_file_path)
+        st.write("**Vorschau der hochgeladenen Datei:**")
+        st.dataframe(df.head(4))
+    except Exception as e:
+        st.error(f"Fehler beim Laden der Excel-Datei: {e}")
+        return
+
+    # Buttons nebeneinander mit größerer Darstellung
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
+        st.button("Solarstrahlung")
+    with col2:
+        st.button("Niederschlag")
+    with col3:
+        st.button("Oberflächen-\ndruck")
+    with col4:
+        st.button("Wind-\ngeschwindigkeit\nin 50 m")
+
+    # Parameter-Eingabe untereinander
+    st.markdown("### Parameter einstellen:")
+    st.checkbox("Worst Case", key="worst_case")
+    st.checkbox("Best Case", key="best_case")
+
+    for parameter in ["Nullpunkt", "Hitzewelle", "Dauerregen", "Sturm"]:
+        st.markdown(f"**{parameter}**")
+        st.date_input("Von", key=f"{parameter}_start", value=datetime(2024, 1, 1))
+        st.date_input("Bis", key=f"{parameter}_end", value=datetime(2024, 1, 2))
+
+    if st.button("Weiter zur nächsten Seite"):
+        st.success("Parameter wurden gespeichert. Weiterleitung ...")
+
+    if st.button("⬅️ Zurück zur Datei-Upload-Seite"):
+        st.session_state.page = "Dateiauswahl"
+
+# Hauptlogik
 def main():
+    add_custom_css()
     if "page" not in st.session_state:
         st.session_state.page = "Start"
-        footer()
 
     if st.session_state.page == "Start":
         start_page()
-        footer()
     elif st.session_state.page == "Dateiauswahl":
         file_upload_page()
-        footer()
-    elif st.session_state.page == "Parameterauswahl":
+    elif st.session_state.page == "Parameter":
         parameter_selection_page()
-        footer()
-    elif st.session_state.page == "Ergebnisse":
-        results_page()
-        footer()
-
 
 if __name__ == "__main__":
     main()
