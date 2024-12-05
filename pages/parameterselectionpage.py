@@ -1,8 +1,6 @@
 from datetime import datetime
-
-import pandas as pd
 import streamlit as st
-
+from utils import *
 
 def parameter_selection_page(STATIC_FILE_PATH):
     st.markdown("<h2>Parameterauswahl</h2>", unsafe_allow_html=True)
@@ -20,7 +18,7 @@ def parameter_selection_page(STATIC_FILE_PATH):
     """, unsafe_allow_html=True)
 
     try:
-        df = pd.read_csv(STATIC_FILE_PATH)
+        df = load_data_after_header(STATIC_FILE_PATH)
         st.write("**Vorschau der ausgewählten Datei:**")
         st.dataframe(df.head(4))
     except Exception as e:
