@@ -64,7 +64,7 @@ def file_upload_page(LAST_USED_DIRECTORY, WINDRAD_IMAGE_PATH, STATIC_FILE_PATH):
             st.session_state.page = "Start"
     with col2:
         if uploaded_file or selected_file:
-            if st.button("Weiter zur Parameterauswahl"):
+            if st.button("Weiter zur Parameterauswahl", disabled=not is_valid):
                 if selected_file:
                     shutil.copy(selected_file_path, STATIC_FILE_PATH)
                 st.session_state.page = "Parameterauswahl"
