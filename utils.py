@@ -25,7 +25,6 @@ def limit_last_used_files(LAST_USED_DIRECTORY):
         os.remove(files_with_paths[0])  # Remove the oldest file
         files_with_paths.pop(0)  # Remove it from the list
 
-
 def load_data_after_header(file_path):
     # Step 1: Read the file to find the index of -END HEADER-
     with open(file_path, 'r') as f:
