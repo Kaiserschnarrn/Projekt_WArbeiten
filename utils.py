@@ -3,7 +3,6 @@ import os
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
-from io import StringIO
 
 def footer():
     st.markdown("""
