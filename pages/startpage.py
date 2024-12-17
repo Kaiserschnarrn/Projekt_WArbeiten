@@ -1,6 +1,5 @@
 from utils import *
 
-
 # Funktion: Startseite
 def start_page():
     st.markdown("""
@@ -28,8 +27,13 @@ def start_page():
         unsafe_allow_html=True,
     )
 
-    # Statische Grafik anzeigen
     st.pyplot(plot_example_graph())
 
-    if st.button("🚀 Wetterapp starten"):
-        st.session_state.page = "Dateiauswahl"
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
+        if st.button("Zum Handbuch 📖"):
+            st.session_state.page = "Manual"
+
+    with col4:
+        if st.button("🚀 Wetterapp starten"):
+            st.session_state.page = "Dateiauswahl"

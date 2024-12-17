@@ -9,7 +9,7 @@ def results_page():
     # Prüfen, ob die notwendigen Daten im Session State vorhanden sind
     if "dataframe" not in st.session_state or "selected_parameter" not in st.session_state:
         st.error("Keine gültigen Parameter oder Daten gefunden. Bitte zuerst Szenarien konfigurieren.")
-        if st.button("Zurück zur Parameterauswahl"):
+        if st.button("⬅️ Zurück zur Parameterauswahl"):
             st.session_state.page = "Parameterauswahl"
         return
 
@@ -39,7 +39,7 @@ def results_page():
         column_name = parameter_mapping[selected_parameter]
     else:
         st.error(f"Der Parameter '{selected_parameter}' ist nicht bekannt.")
-        if st.button("Zurück zur Parameterauswahl"):
+        if st.button("⬅️ Zurück zur Parameterauswahl"):
             st.session_state.page = "Parameterauswahl"
         return
 
@@ -49,7 +49,7 @@ def results_page():
         st.error(f"Die Spalte für den Parameter '{selected_parameter}' ('{column_name}') ist in den Daten nicht verfügbar.")
         st.write("**Verfügbare Parameter:")
         st.write(available_columns)
-        if st.button("Zurück zur Parameterauswahl"):
+        if st.button("⬅️ Zurück zur Parameterauswahl"):
             st.session_state.page = "Parameterauswahl"
         return
 
@@ -71,7 +71,7 @@ def results_page():
     active_scenarios = [scenario for scenario, active in selected_scenarios.items() if active]
     if not active_scenarios:
         st.warning("Keine Szenarien wurden aktiviert. Bitte zur Parameterauswahl zurückkehren.")
-        if st.button("Zurück zur Parameterauswahl"):
+        if st.button("⬅️ Zurück zur Parameterauswahl"):
             st.session_state.page = "Parameterauswahl"
         return
 
@@ -142,10 +142,10 @@ def results_page():
                 )
 
     # Navigation
-    col_buttons1, col_buttons2 = st.columns(2)
+    col_buttons1, col_buttons2, col_buttons3, col_buttons4 = st.columns(4)
     with col_buttons1:
         if st.button("⬅️ Zurück zur Parameterauswahl"):
             st.session_state.page = "Parameterauswahl"
-    with col_buttons2:
-        if st.button("Zurück zur Startseite"):
+    with col_buttons4:
+        if st.button("Zurück zur Startseite 🔃"):
             st.session_state.page = "Start"

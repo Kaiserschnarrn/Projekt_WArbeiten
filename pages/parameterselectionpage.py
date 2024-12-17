@@ -13,8 +13,9 @@ def parameter_selection_page():
 
     # Datenvorschau bleibt oben erhalten
     df = st.session_state.dataframe
+    df['YEAR'] = df['YEAR'].astype(int)
     st.write("**Vorschau der ausgewählten Daten:**")
-    st.dataframe(df.head(4))
+    st.dataframe(df.head(4).style.format({'YEAR': '{:.0f}'}), use_container_width=True)
 
     # Liste der Parameter mit neuen Namen
     parameters = ["Druck", "Wind", "Solar", "Regen"]
@@ -84,11 +85,11 @@ def parameter_selection_page():
                     )
 
     # Navigation
-    col_buttons1, col_buttons2 = st.columns(2)
+    col_buttons1, col_buttons2, col_buttons3, col_buttons4 = st.columns(4)
     with col_buttons1:
         if st.button("⬅️ Zurück zur Datei-Upload-Seite"):
             st.session_state.page = "Dateiauswahl"
-    with col_buttons2:
-        if st.button("Weiter zu den Ergebnissen"):
+    with col_buttons4:
+        if st.button("Weiter zu den Ergebnissen ✅"):
             st.success("Szenarien wurden gespeichert. Weiterleitung ...")
             st.session_state.page = "Ergebnisse"
