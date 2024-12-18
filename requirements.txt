@@ -3,3 +3,4 @@ matplotlib==3.9.2
 pandas==2.2.3
 numpy==2.0.2
 datetime==5.5
+streamlit_pdf_viewer==0.0.19

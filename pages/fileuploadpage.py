@@ -58,15 +58,15 @@ def file_upload_page(LAST_USED_DIRECTORY, WINDRAD_IMAGE_PATH):
                 st.info("Bitte prüfen Sie das Tutorial auf der Startseite.")
 
     # Navigation
-    col1, col2 = st.columns(2)
+    col1, col2, col3, col4 = st.columns(4)
     with col1:
-        if st.button("Zurück zur Startseite"):
+        if st.button("Zurück zur Startseite 🔃"):
             st.session_state.page = "Start"
-    with col2:
+    with col4:
         if (uploaded_file or (selected_file and selected_file != "")) and is_valid:
-            if st.button("Weiter zur Parameterauswahl"):
+            if st.button("Weiter zur Parameterauswahl 🔋"):
                 # Da Daten im Session-State sind, kein Kopieren nötig
                 st.session_state.page = "Parameterauswahl"
         else:
-            st.button("Weiter zur Parameterauswahl", disabled=True)
+            st.button("Weiter zur Parameterauswahl 🔋", disabled=True)
 
