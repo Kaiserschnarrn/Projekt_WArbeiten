@@ -37,3 +37,42 @@ def start_page():
     with col4:
         if st.button("🚀 Wetterapp starten"):
             st.session_state.page = "Dateiauswahl"
+
+# Grafik als Beispiel
+def plot_example_graph():
+    import matplotlib.pyplot as plt
+    import pandas as pd
+    import numpy as np
+
+    def generate_monthly_data():
+        months = pd.date_range("2023-01-01", periods=12, freq="ME")
+        solar = np.random.uniform(50, 200, 12)
+        wind = np.random.uniform(100, 300, 12)
+        rain = np.random.uniform(0, 200, 12)
+        pressure = np.random.uniform(950, 1050, 12)
+        return pd.DataFrame(
+            {
+            "Month": months,
+            "Solar": solar,
+            "Wind": wind,
+            "Regen": rain,
+            "Druck": pressure
+            }
+        )
+
+    data = generate_monthly_data()
+
+    fig, ax = plt.subplots(figsize=(15, 6))
+
+    ax.plot(data["Month"], data["Solar"], marker="o", label="Solar")
+    ax.plot(data["Month"], data["Wind"], marker="o", label="Wind")
+    ax.plot(data["Month"], data["Regen"], marker="o", label="Regen")
+    ax.plot(data["Month"], data["Druck"], marker="o", label="Druck")
+
+    ax.set_title("Wetterdaten (Beispieldaten)")
+    ax.set_xlabel("Monat")
+    ax.set_ylabel("Wert")
+    ax.legend()
+    ax.grid()
+
+    return fig
