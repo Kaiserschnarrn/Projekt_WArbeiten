@@ -6,19 +6,16 @@ from io import BytesIO
 def results_page():
     st.markdown("<h2>Ergebnisse</h2>", unsafe_allow_html=True)
 
-    # Prüfen, ob die notwendigen Daten im Session State vorhanden sind
     if "dataframe" not in st.session_state or "selected_parameter" not in st.session_state:
         st.error("Keine gültigen Parameter oder Daten gefunden. Bitte zuerst Szenarien konfigurieren.")
         if st.button("⬅️ Zurück zur Parameterauswahl"):
             st.session_state.page = "Parameterauswahl"
         return
 
-    # Daten und ausgewählte Einstellungen abrufen
     df = st.session_state.dataframe
     selected_parameter = st.session_state.selected_parameter
     selected_scenarios = st.session_state.selected_scenarios
 
-    # Mapping der Parameter zu Spaltennamen
     parameter_mapping = {
         "Wind": "WS50M",
         "Solar": "ALLSKY_SFC_SW_DWN",
@@ -26,7 +23,6 @@ def results_page():
         "Druck": "PS"
     }
 
-    # Szenario-Beschränkungen
     disabled_scenarios = {
         "Druck": ["Nullpunkt", "Hitzewelle", "Dauerregen", "Sturm"],
         "Wind": ["Hitzewelle", "Dauerregen"],
@@ -34,7 +30,6 @@ def results_page():
         "Regen": ["Hitzewelle", "Sturm"]
     }
 
-    # Überprüfen, ob der ausgewählte Parameter im Mapping enthalten ist
     if selected_parameter in parameter_mapping:
         column_name = parameter_mapping[selected_parameter]
     else:
@@ -43,7 +38,6 @@ def results_page():
             st.session_state.page = "Parameterauswahl"
         return
 
-    # Verfügbare Spalten im DataFrame prüfen
     available_columns = df.columns.tolist()
     if column_name not in available_columns:
         st.error(f"Die Spalte für den Parameter '{selected_parameter}' ('{column_name}') ist in den Daten nicht verfügbar.")
@@ -53,7 +47,6 @@ def results_page():
             st.session_state.page = "Parameterauswahl"
         return
 
-    # Initiale Darstellung der Jahreswerte
     st.markdown("### Jahreswerte")
     fig, ax = plt.subplots(figsize=(10, 5))
     monthly_avg = df.groupby("MO")[column_name].mean()
@@ -64,7 +57,6 @@ def results_page():
     ax.grid(True)
     st.pyplot(fig)
 
-    # Zeige eine Zusammenfassung der Auswahl
     st.markdown("### Zusammenfassung der Szenarien")
     st.write(f"**Ausgewählter Parameter:** {selected_parameter} ({column_name})")
 
@@ -77,7 +69,6 @@ def results_page():
 
     st.write(f"**Aktivierte Szenarien:** {', '.join(active_scenarios)}")
 
-    # Ergebnisse für jedes aktivierte Szenario berechnen und anzeigen
     for scenario in active_scenarios:
         st.markdown(f"#### Ergebnisse für Szenario: {scenario}")
 
@@ -90,14 +81,12 @@ def results_page():
             worst_month = df[df[column_name] == worst_value][["YEAR", "MO"]].iloc[0]
             st.write(f"Der schlechteste Monat für '{selected_parameter}' ist {int(worst_month['MO'])}/{int(worst_month['YEAR'])} mit einem Wert von {worst_value}.")
         else:
-            # Filterung oder Berechnungen basierend auf Szenario und Parameter
             start_date = pd.to_datetime(st.session_state.get(f"{selected_parameter}_{scenario}_start"))
             end_date = pd.to_datetime(st.session_state.get(f"{selected_parameter}_{scenario}_end"))
 
             if start_date and end_date:
                 st.write(f"Zeitraum: {start_date.date()} bis {end_date.date()}")
 
-                # Erstellen einer Kopie der Daten für die Simulation
                 simulated_df = df.copy()
                 simulated_df["DATE"] = pd.to_datetime(simulated_df["YEAR"].astype(str) + "-" + simulated_df["MO"].astype(str) + "-" + simulated_df.get("DY", 1).astype(str), errors='coerce')
 
@@ -117,7 +106,6 @@ def results_page():
                     simulated_df.loc[(simulated_df["DATE"] >= start_date) & (simulated_df["DATE"] <= end_date), column_name] = max_value
                     st.write("Simulation: Sturm simuliert.")
 
-                # Darstellung der Daten als Graph (Simulation separat für jedes Szenario)
                 simulated_monthly_avg = simulated_df.groupby(simulated_df["DATE"].dt.month)[column_name].mean()
 
                 fig, ax = plt.subplots(figsize=(10, 5))
@@ -129,7 +117,7 @@ def results_page():
                 ax.grid(True)
                 st.pyplot(fig)
 
-                # Button nur für CSV-Download der simulierten Daten
+
                 csv_buffer = BytesIO()
                 simulated_df.to_csv(csv_buffer, index=False)
                 csv_buffer.seek(0)
@@ -141,7 +129,6 @@ def results_page():
                     key=f"download_{scenario}_csv"
                 )
 
-    # Navigation
     col_buttons1, col_buttons2, col_buttons3, col_buttons4 = st.columns(4)
     with col_buttons1:
         if st.button("⬅️ Zurück zur Parameterauswahl"):
