@@ -15,7 +15,7 @@ if not os.path.exists(LAST_USED_DIRECTORY):
     os.makedirs(LAST_USED_DIRECTORY)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-WINDRAD_IMAGE_PATH = os.path.join(BASE_DIR, "windrad.gif")
+WINDRAD_IMAGE_PATH = os.path.join(BASE_DIR, "pages/content/windrad.gif")
 manual_pdf_path = "pages/content/Handbuch zum Tool.pdf"
 
 def main():
