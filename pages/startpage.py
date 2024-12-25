@@ -22,6 +22,9 @@ def start_page():
         3️⃣ Analysieren und visualisieren Sie Ihre Daten.  
         """)
 
+        st.subheader("📹 Video-Tutorial")
+        display_video()
+
     st.markdown(
         "<a href='https://power.larc.nasa.gov/data-access-viewer/' style='color: #004d99; text-decoration: none;'>🌐 Besuchen Sie die NASA POWER-Seite</a>",
         unsafe_allow_html=True,

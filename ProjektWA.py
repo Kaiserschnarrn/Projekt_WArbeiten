@@ -5,7 +5,7 @@ from pages.fileuploadpage import file_upload_page
 from pages.parameterselectionpage import parameter_selection_page
 from pages.resultspage import results_page
 from pages.manual import manual_page
-from utils import footer
+from utils import *
 
 DATA_DIRECTORY = "./data"
 if not os.path.exists(DATA_DIRECTORY):
