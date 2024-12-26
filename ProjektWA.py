@@ -5,7 +5,7 @@ from pages.fileuploadpage import file_upload_page
 from pages.parameterselectionpage import parameter_selection_page
 from pages.resultspage import results_page
 from pages.manual import manual_page
-from utils import *
+from utils import footer
 
 DATA_DIRECTORY = "./data"
 if not os.path.exists(DATA_DIRECTORY):
@@ -17,6 +17,7 @@ if not os.path.exists(LAST_USED_DIRECTORY):
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 WINDRAD_IMAGE_PATH = os.path.join(BASE_DIR, "pages/content/windrad.gif")
 manual_pdf_path = "pages/content/Handbuch zum Tool.pdf"
+video_file_path = "pages/content/video_base64.txt"
 
 def main():
     if "page" not in st.session_state:
@@ -24,7 +25,7 @@ def main():
         footer()
 
     if st.session_state.page == "Start":
-        start_page()
+        start_page(video_file_path)
         footer()
     elif st.session_state.page == "Manual":
         manual_page(manual_pdf_path)

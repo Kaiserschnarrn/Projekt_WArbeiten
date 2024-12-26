@@ -72,9 +72,7 @@ def validate_file(file_path):
     return is_valid, error
 
 
-def display_video():
-    video_file_path = "pages/content/video_base64.txt"
-
+def display_video(video_file_path):
     try:
         with open(video_file_path, "r") as file:
             video_base64 = file.read()

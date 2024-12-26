@@ -1,7 +1,7 @@
-from utils import *
+from utils import display_video, plot_example_graph
+import streamlit as st
 
-# Funktion: Startseite
-def start_page():
+def start_page(video_file_path):
     st.markdown("""
         <div class="header">
             <h1>Wetterdaten-App</h1>
@@ -23,7 +23,7 @@ def start_page():
         """)
 
         st.subheader("📹 Video-Tutorial")
-        display_video()
+        display_video(video_file_path)
 
     st.markdown(
         "<a href='https://power.larc.nasa.gov/data-access-viewer/' style='color: #004d99; text-decoration: none;'>🌐 Besuchen Sie die NASA POWER-Seite</a>",
