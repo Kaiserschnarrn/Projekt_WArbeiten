@@ -3,6 +3,7 @@ import os
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
+import base64
 
 def footer():
     st.markdown("""
@@ -69,6 +70,20 @@ def validate_file(file_path):
         error = f"Fehler beim Lesen der Datei: {str(e)}"
 
     return is_valid, error
+
+
+def display_video(video_file_path):
+    try:
+        with open(video_file_path, "r") as file:
+            video_base64 = file.read()
+
+        video_bytes = base64.b64decode(video_base64)
+
+        st.video(video_bytes)
+    except FileNotFoundError:
+        st.error(f"Die Datei '{video_file_path}' wurde nicht gefunden.")
+    except Exception as e:
+        st.error(f"Ein Fehler ist aufgetreten: {e}")
 
 @st.cache_data
 def plot_example_graph():
